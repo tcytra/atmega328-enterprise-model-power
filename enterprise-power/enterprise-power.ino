@@ -88,8 +88,16 @@ class Flicker
   }
 };
 
+int powerExterior;
+int powerInterior;
+int powerEngines;
+int powerWeapons;
+
+/** @todo Markers/Strobes will require powerExterior */
 Flasher exteriorMarkers(13, 1000, 1000);
 Flasher exteriorStrobes(12, 64, 1200);
+
+/** @todo Thrusters will require powerEngines */
 Flicker engineThrustInner(9);
 Flicker engineThrustOuter(10);
 
