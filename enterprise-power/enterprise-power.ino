@@ -4,8 +4,8 @@ class Flasher
   int on;
   int off;
   int pin;
+  int power;
   int state;
-  
   unsigned long then;
 
   public:
@@ -15,58 +15,92 @@ class Flasher
     on    = _on;
     off   = _off;
     then  = 0;
+    power = 0;
     state = LOW;
     
     pinMode(pin, OUTPUT);
   }
   
+  void Power(int set = -1)
+  {
+    power = ((set > -1) ? set : ((power > 0) ? 0 : 1));
+  }
+  
   void Signal(unsigned long now)
   {
-    if ((state == HIGH) && (now -then >= on)) {
-      state = LOW;
-      then  = now;
-      digitalWrite(pin, state);
+    if (power) {
+      if ((state == HIGH) && (now -then >= on)) {
+        state = LOW;
+        then  = now;
+        digitalWrite(pin, state);
+      } else
+      if ((state == LOW) && (now -then >= off)) {
+        state = HIGH;
+        then  = now;
+        digitalWrite(pin, state);
+      }
     } else
-    if ((state == LOW) && (now -then >= off)) {
-      state = HIGH;
-      then  = now;
+    if (state == HIGH) {
+      state = LOW;
       digitalWrite(pin, state);
     }
   }
 };
 
-class Thruster
+class Flicker
 {
   int pin;
   int wait;
+  int level;
+  int power;
+  int state;
   unsigned long then;
   
   public:
-  Thruster(int _pin)
+  Flicker(int _pin)
   {
     pin   = _pin;
     wait  = 100;
     then  = 0;
+    power = 0;
+    state = 0;
     pinMode(pin, OUTPUT);
   }
-
+  
+  void Power(int set = -1)
+  {
+    power = ((set > -1) ? set : ((power > 0) ? 0 : 1));
+  }
+  
   void Signal(unsigned long now)
   {
-    if (now -then >= wait) {
-      then = now;
-      analogWrite(pin, random(120) +135);
+    if (power) {
+      if (now -then >= wait) {
+        then = now;
+        state = random(120) +135;
+        analogWrite(pin, state);
+      }
+    } else
+    if (state) {
+      state = 0;
+      analogWrite(pin, state);
     }
   }
 };
 
 Flasher exteriorMarkers(13, 1000, 1000);
 Flasher exteriorStrobes(12, 64, 1200);
-Thruster exteriorThrustInner(9);
-Thruster exteriorThrustOuter(10);
+Flicker engineThrustInner(9);
+Flicker engineThrustOuter(10);
 
 void setup() {
   Serial.begin(9600);
 
+  exteriorMarkers.Power();
+  exteriorStrobes.Power();
+  engineThrustInner.Power();
+  engineThrustOuter.Power();
+  
   OCR0A = 0xAF;
   TIMSK0 |= _BV(OCIE0A);
 }
@@ -77,8 +111,8 @@ SIGNAL(TIMER0_COMPA_vect)
   
   exteriorMarkers.Signal(now);
   exteriorStrobes.Signal(now);
-  exteriorThrustInner.Signal(now);
-  exteriorThrustOuter.Signal(now);
+  engineThrustInner.Signal(now);
+  engineThrustOuter.Signal(now);
 }
 
 void loop() {
