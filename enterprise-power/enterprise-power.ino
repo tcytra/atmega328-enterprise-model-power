@@ -30,20 +30,23 @@ class Flasher
   {
     if (power) {
       if ((state == HIGH) && (now -then >= on)) {
-        state = LOW;
-        then  = now;
-        digitalWrite(pin, state);
+        Write(now, LOW);
       } else
       if ((state == LOW) && (now -then >= off)) {
-        state = HIGH;
-        then  = now;
-        digitalWrite(pin, state);
+        Write(now, HIGH);
       }
     } else
     if (state == HIGH) {
-      state = LOW;
-      digitalWrite(pin, state);
+      Write(0, LOW);
+      then = 0;
     }
+  }
+  
+  void Write(unsigned long _now, int _state)
+  {
+    then  = _now;
+    state = _state;
+    digitalWrite(pin, state);
   }
 };
 
