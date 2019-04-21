@@ -35,8 +35,34 @@ class Flasher
   }
 };
 
+class Thruster
+{
+  int pin;
+  int wait;
+  unsigned long then;
+  
+  public:
+  Thruster(int _pin)
+  {
+    pin   = _pin;
+    wait  = 100;
+    then  = 0;
+    pinMode(pin, OUTPUT);
+  }
+
+  void Signal(unsigned long now)
+  {
+    if (now -then >= wait) {
+      then = now;
+      analogWrite(pin, random(120) +135);
+    }
+  }
+};
+
 Flasher exteriorMarkers(13, 1000, 1000);
 Flasher exteriorStrobes(12, 64, 1200);
+Thruster exteriorThrustInner(9);
+Thruster exteriorThrustOuter(10);
 
 void setup() {
   Serial.begin(9600);
@@ -51,6 +77,8 @@ SIGNAL(TIMER0_COMPA_vect)
   
   exteriorMarkers.Signal(now);
   exteriorStrobes.Signal(now);
+  exteriorThrustInner.Signal(now);
+  exteriorThrustOuter.Signal(now);
 }
 
 void loop() {
