@@ -3,9 +3,11 @@
  *  Engine Power Object
  */
 
-int  pinEngineButton    = 2;
-byte engineButtonState  = 0;
-byte engineButtonPress  = 0;
+
+int  dishRGBPins[3]     = {9, 10, 11};
+//int  domeRGBPins[3]     = {};
+int  thrusterRBGPins[3] = {3, 5, 6};
+
 
 /**
  *  Class   EnginePower
@@ -16,9 +18,9 @@ class EnginePower
   int pinGreen;
   int pinBlue;
 
-  char allowThrustOff = 0;
   char allowCycleBack = 0;
-  char isAvailable    = 1;
+  char allowThrustOff = 0;
+  char powerAvailable = 0;
   
   byte engineState    = 0;
   byte engineLevel[3] = {0, 0, 0};
@@ -32,11 +34,13 @@ class EnginePower
   }
 
   public:
-  EnginePower(int pin_red, int pin_green, int pin_blue)
+  EnginePower(int powerOn)
   {
-    pinRed    = pin_red;
-    pinGreen  = pin_green;
-    pinBlue   = pin_blue;
+    powerAvailable = powerOn;
+    
+    pinRed    = dishRGBPins[0];
+    pinGreen  = dishRGBPins[1];
+    pinBlue   = dishRGBPins[2];
     
     pinMode(pinRed, OUTPUT);
     pinMode(pinGreen, OUTPUT);
@@ -89,7 +93,7 @@ class EnginePower
       case 0: engineState = 1; break;
     }
 
-    Serial.println("");
+    /*Serial.println("");
     Serial.print("EngineState: ");
     Serial.print(impulseActive);
     Serial.print(thrustersActive);
@@ -97,7 +101,7 @@ class EnginePower
     Serial.print(" -> ");
     Serial.print(bitRead(engineState,0));
     Serial.print(bitRead(engineState,1));
-    Serial.println(bitRead(engineState,2));
+    Serial.println(bitRead(engineState,2));*/
     
     if (!engineState) {
       disengageEngines();
@@ -135,18 +139,24 @@ class EnginePower
   }
 };
 
-EnginePower enginePower(9, 10, 11);
+EnginePower enginePower(1);
+
+
+
+int  engineButtonPin    = 2;
+byte engineButtonState  = 0;
+byte engineButtonPress  = 0;
 
 void setup() {
   Serial.begin(9600);
   
-  pinMode(pinEngineButton, INPUT);
+  pinMode(engineButtonPin, INPUT);
   
   Serial.println("Engine Power Ready.");
 }
 
 void loop() {
-  engineButtonState = digitalRead(pinEngineButton);
+  engineButtonState = digitalRead(engineButtonPin);
 
   if (engineButtonState) {
     if (!engineButtonPress) {
