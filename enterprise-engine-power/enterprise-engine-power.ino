@@ -3,20 +3,21 @@
  *  Engine Power Object
  */
 
-
-int  dishRGBPins[3]     = {9, 10, 11};
-//int  domeRGBPins[3]     = {};
-int  thrusterRBGPins[3] = {3, 5, 6};
-
+int  dishRGBPins[3]   = {9, 10, 11};
+//int  domeRGBPins[3] = {};
+int  thrusterPins[3]  = {3, 5, 6};
 
 /**
  *  Class   EnginePower
  */
 class EnginePower
 {
-  int pinRed;
-  int pinGreen;
-  int pinBlue;
+  int dishPinRed;
+  int dishPinGreen;
+  int dishPinBlue;
+  int thrustPinInner;
+  int thrustPinLower;
+  int thrustPinUpper;
 
   char allowCycleBack = 0;
   char allowThrustOff = 0;
@@ -28,53 +29,72 @@ class EnginePower
   byte rgbThrust[3]   = {0, 0, 0};
   byte rgbWarp[3]     = {0, 0, 255};
 
-  int powerLevel(byte target, byte level)
+  int powerLevel(byte target, byte level = 0)
   {
-    return level ? (255 -round( target *(level /100) )) : 0;
+    return level ? round( target *(level /100) ) : (target ? target : 0);
   }
 
   public:
   EnginePower(int powerOn)
   {
     powerAvailable = powerOn;
-    
-    pinRed    = dishRGBPins[0];
-    pinGreen  = dishRGBPins[1];
-    pinBlue   = dishRGBPins[2];
-    
-    pinMode(pinRed, OUTPUT);
-    pinMode(pinGreen, OUTPUT);
-    pinMode(pinBlue, OUTPUT);
 
-    analogWrite(pinRed,   255-0);
-    analogWrite(pinGreen, 255-0);
-    analogWrite(pinBlue,  255-0);
+    dishPinRed    = dishRGBPins[0];
+    dishPinGreen  = dishRGBPins[1];
+    dishPinBlue   = dishRGBPins[2];
+
+    pinMode(dishPinRed,   OUTPUT);
+    pinMode(dishPinGreen, OUTPUT);
+    pinMode(dishPinBlue,  OUTPUT);
+
+    analogWrite(dishPinRed,   255 -powerLevel(0));
+    analogWrite(dishPinGreen, 255 -powerLevel(0));
+    analogWrite(dishPinBlue,  255 -powerLevel(0));
+
+    thrustPinInner  = thrusterPins[0];
+    thrustPinLower  = thrusterPins[1];
+    thrustPinUpper  = thrusterPins[2];
+    
+    pinMode(thrustPinInner, OUTPUT);
+    pinMode(thrustPinLower, OUTPUT);
+    pinMode(thrustPinUpper, OUTPUT);
+    
+    //analogWrite(thrustPinInner, powerLevel(0));
+    //analogWrite(thrustPinLower, powerLevel(0));
+    //analogWrite(thrustPinUpper, powerLevel(0));
   }
 
   void disengageEngines()
   {
     Serial.println("Engine Status: All Engines Disengaged");
-    analogWrite(pinRed,   255-0);
-    analogWrite(pinGreen, 255-0);
-    analogWrite(pinBlue,  255-0);
+    analogWrite(dishPinRed,   255 -powerLevel(0));
+    analogWrite(dishPinGreen, 255 -powerLevel(0));
+    analogWrite(dishPinBlue,  255 -powerLevel(0));
+    analogWrite(thrustPinInner, powerLevel(0));
+    analogWrite(thrustPinLower, powerLevel(0));
+    analogWrite(thrustPinUpper, powerLevel(0));
     engineState = 0;
   }
 
   void impulsePower(int level)
   {
-    analogWrite(pinRed,   powerLevel(rgbImpulse[0], level));
-    analogWrite(pinGreen, powerLevel(rgbImpulse[1], level));
-    analogWrite(pinBlue,  powerLevel(rgbImpulse[2], level));
+    analogWrite(dishPinRed,   255 -powerLevel(rgbImpulse[0], level));
+    analogWrite(dishPinGreen, 255 -powerLevel(rgbImpulse[1], level));
+    analogWrite(dishPinBlue,  255 -powerLevel(rgbImpulse[2], level));
   }
 
   void thrusterPower(int level)
-  {  }
+  {
+    analogWrite(thrustPinInner, powerLevel(200));
+    analogWrite(thrustPinLower, powerLevel(200));
+    analogWrite(thrustPinUpper, powerLevel(200));
+  }
   
   void warpPower(int level)
   {
-    analogWrite(pinRed,   255 -(level ? rgbWarp[0] : 0));
-    analogWrite(pinGreen, 255 -(level ? rgbWarp[1] : 0));
-    analogWrite(pinBlue,  255 -(level ? rgbWarp[2] : 0));
+    analogWrite(dishPinRed,   255 -powerLevel(rgbWarp[0], level));
+    analogWrite(dishPinGreen, 255 -powerLevel(rgbWarp[1], level));
+    analogWrite(dishPinBlue,  255 -powerLevel(rgbWarp[2], level));
   }
 
   void cycleEngines()
@@ -141,7 +161,7 @@ class EnginePower
 
 EnginePower enginePower(1);
 
-
+//  ------------------------------------------------------------
 
 int  engineButtonPin    = 2;
 byte engineButtonState  = 0;
@@ -151,6 +171,8 @@ void setup() {
   Serial.begin(9600);
   
   pinMode(engineButtonPin, INPUT);
+
+  enginePower.disengageEngines();
   
   Serial.println("Engine Power Ready.");
 }
