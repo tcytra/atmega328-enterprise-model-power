@@ -1,33 +1,31 @@
 /**
   Class Flasher
-  Create a flashing light effect
+  Manage a flashing light effect
   
   @author   Todd Cytra <tcytra@gmail.com>
-  @version  0.1 obj-flicker 2019-05-17
+  @version  0.5 class-flasher.h 2019-05-17
 */
 class Flasher
 {
-  int on;
-  int off;
-  int pin;
-  int power;
-  int state;
+  int   on;
+  int   off;
+  int   pin;
+  int   power;
+  int   state;
   unsigned long then;
 
   public:
   
-  Flasher(int _pin, long _on, long _off)
+  Flasher(int _pin, long _on, long _off, int _shift = 0)
   {
-    pin   = _pin;
+    pin   = _shift ? pin2Bit(_pin) : _pin;
     on    = _on;
     off   = _off;
     then  = 0;
     power = 0;
     state = 0;
     
-    pinMode(pin, OUTPUT);
-
-    digitalWrite(pin, 0);
+    bitWrite(shiftExterior, pin, 0); // ensure the 'pin' is off by default
   }
   
   void Power(int set = -1)
@@ -53,8 +51,12 @@ class Flasher
   
   void Write(unsigned long _now, int _state)
   {
+    //if(_state){ Serial.println("Marker On"); }else{ Serial.println("Marker Off"); }
+    
     then  = _now;
     state = _state;
-    digitalWrite(pin, state);
+    bitWrite(shiftExterior, pin, state);
+
+    //Serial.println(shiftExterior, BIN);
   }
 };

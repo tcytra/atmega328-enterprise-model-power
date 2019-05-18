@@ -1,9 +1,9 @@
 /**
   Class Flicker
-  Create a candlelight type flicker effect
+  Manage a candlelight type flicker effect
 
   @author   Todd Cytra <tcytra@gmail.com>
-  @version  0.1 obj-flicker 2019-05-17
+  @version  0.5 class-flicker.h 2019-05-17
 */
 class Flicker
 {
@@ -16,9 +16,9 @@ class Flicker
   
   public:
   
-  Flicker(int _pin)
+  Flicker(int _pin, int _shift = 0)
   {
-    pin   = _pin;
+    pin   = _shift ? pin2Bit(_pin) : _pin;
     wait  = 100;
     then  = 0;
     power = 0;
