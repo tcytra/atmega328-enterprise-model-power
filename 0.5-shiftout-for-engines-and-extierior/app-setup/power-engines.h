@@ -16,7 +16,6 @@ class EnginePower
 
   char allowCycleBack = 0;
   char allowThrustOff = 0;
-  char powerAvailable = 1;
   
   byte engineState    = 0;
   byte engineLevel[3] = {0, 0, 0};
@@ -25,29 +24,29 @@ class EnginePower
 
   int powerLevel(byte target, byte level = 0)
   {
-    return level ? round( target *(level /100) ) : (target ? target : 0);
+    //return level ? round( target *(level /100) ) : (target ? target : 0);
   }
 
   public:
-  
-  EnginePower(int dishPins[3])
+  Power power;
+  EnginePower(int dishPins[3], int thrustPins[3])
   {
-    powerAvailable = 1;
-
     dishPinRed    = dishPins[0];
     dishPinGreen  = dishPins[1];
     dishPinBlue   = dishPins[2];
 
-    pinMode(dishPinRed,   OUTPUT);
-    pinMode(dishPinGreen, OUTPUT);
-    pinMode(dishPinBlue,  OUTPUT);
+    /*
+    //pinMode(dishPinRed,   OUTPUT);
+    //pinMode(dishPinGreen, OUTPUT);
+    //pinMode(dishPinBlue,  OUTPUT);
 
-    analogWrite(dishPinRed,   0);
-    analogWrite(dishPinGreen, 0);
-    analogWrite(dishPinBlue,  0);
+    //analogWrite(dishPinRed,   0);
+    //analogWrite(dishPinGreen, 0);
+    //analogWrite(dishPinBlue,  0);
 
     //engineThrustInner.Power(0);
     //engineThrustOuter.Power(0);
+    */
   }
 
   void disengageEngines()

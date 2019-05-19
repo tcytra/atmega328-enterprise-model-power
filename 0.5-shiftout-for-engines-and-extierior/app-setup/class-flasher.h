@@ -7,35 +7,30 @@
 */
 class Flasher
 {
+  byte  shift;
   int   on;
   int   off;
   int   pin;
-  int   power;
   int   state;
   unsigned long then;
 
   public:
-  
-  Flasher(int _pin, long _on, long _off, int _shift = 0)
+  Power power;
+  Flasher(byte &_shift, int _pin, long _on, long _off)
   {
-    pin   = _shift ? pin2Bit(_pin) : _pin;
+    shift = _shift;
+    pin   = pin2Bit(_pin);
     on    = _on;
     off   = _off;
     then  = 0;
-    power = 0;
     state = 0;
     
-    bitWrite(shiftExterior, pin, 0); // ensure the 'pin' is off by default
-  }
-  
-  void Power(int set = -1)
-  {
-    power = ((set > -1) ? set : ((power > 0) ? 0 : 1));
+    bitWrite(shift, pin, 0); // ensure the 'pin' is off by default
   }
   
   void Signal(unsigned long now)
   {
-    if (power) {
+    if (power.available) {
       if ((state == 1) && (now -then >= on)) {
         Write(now, 0);
       } else
@@ -55,8 +50,8 @@ class Flasher
     
     then  = _now;
     state = _state;
-    bitWrite(shiftExterior, pin, state);
+    bitWrite(shift, pin, state);
 
-    //Serial.println(shiftExterior, BIN);
+    //Serial.println(shift, BIN);
   }
 };

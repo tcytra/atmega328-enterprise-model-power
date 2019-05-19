@@ -6,79 +6,95 @@
   @version  0.1 app-setup 2019-05-17
 */
 
-//  various app utilities
-#include "app-utility.h"
+//  include the libraries
+#include <TimerOne.h>
 
-//  declare the shift registers
-byte  shiftEngines      = 0B00000000; // register 0
-byte  shiftExterior     = 0B00000000; // register 1
-
-//  include the classes
-#include "class-button.h"
+//  include the local classes
+#include "app-utility.h"    //  utilities used by the classes
+#include "class-power.h"    //  Power is a dependancy object
+#include "class-button.h"   //  Button is a dependancy object
 #include "class-flasher.h"
 #include "class-flicker.h"
 
-//  create the instances
-Flasher exteriorMarkers(1, 1000, 1000, 1);
-Flasher exteriorStrobes(2, 64, 1200, 1);
-Flicker engineThrustInner(1);
-Flicker engineThrustLower(2);
-Flicker engineThrustUpper(3);
-
-//  include the power sections
+//  include the power systems
 #include "power-engines.h"
 #include "power-exterior.h"
 
+EnginePower   *engine;
+ExteriorPower *exterior;
+
 //  ------------------------------------------------------------
 
-//  engine pin variables
-int   dishRGBPins[3]    = {9, 10, 11};
-int   thrusterPins[3]   = {3, 5, 6};
+//  engine pins
+int   dishPins[3]   = {9, 10, 11};
+int   thrustPins[3] = {3, 5, 6};
 
-//  engine btn variables
-int   engineButtonPin   = 2;
-byte  engineButtonState = 0;
-byte  engineButtonPress = 0;
+//  engine buttons
+int   btnEngineFirstPin   = 2;
+byte  btnEngineFirstState = 0;
+byte  btnEngineFirstPress = 0;
 
-//EnginePower enginePower(dishRGBPins);
+int   btnEngineFinalPin   = 4;
+byte  btnEngineFinalState = 0;
+byte  btnEngineFinalPress = 0;
+
+int   btnExteriorFirstPin   = 7;
+byte  btnExteriorFirstState = 0;
+byte  btnExteriorFirstPress = 0;
+
+int   btnExteriorFinalPin   = 8;
+byte  btnExteriorFinalState = 0;
+byte  btnExteriorFinalPress = 0;
+
+//  exterior pins
+int   markerPin   = 1;
+int   strobePin   = 2;
 
 //  ------------------------------------------------------------
 
 //  declare the shiftout pins
-int   latchPin          = 10;
-int   clockPin          = 13;
-int   dataPin           = 11;
+int   latchPin          = 10; // ST_CP
+int   clockPin          = 13; // SH_CP
+int   dataPin           = 11; // DS
 
 void setup() {
   Serial.begin(9600);
+
+  engine    = new EnginePower(dishPins, thrustPins);
+  exterior  = new ExteriorPower(markerPin, strobePin);
 
   //  connect the shiftout pins
   pinMode(latchPin, OUTPUT);
   pinMode(clockPin, OUTPUT);
   pinMode(dataPin, OUTPUT);
   
-  pinMode(engineButtonPin, INPUT);
+  pinMode(btnEngineFirstPin, INPUT);
+  pinMode(btnEngineFinalPin, INPUT);
+  pinMode(btnExteriorFirstPin, INPUT);
+  pinMode(btnExteriorFinalPin, INPUT);
 
-  //enginePower.disengageEngines();
-  exteriorMarkers.Power();
-  exteriorStrobes.Power();
-  //engineThrustInner.Power();
-  //engineThrustOuter.Power();
+  //exterior.power.up();
+  //exterior.strobes->power.up();
 
-  OCR0A = 0xAF;
-  TIMSK0 |= _BV(OCIE0A);
+  //OCR0A = 0xAF;
+  //TIMSK0 |= _BV(OCIE0A);
   
   Serial.println("Power ready.");
+  Serial.println("Engine Power: "+ engine->power.readStatus());
+  Serial.println("Exterior Power: " + exterior->power.readStatus());
+  //Serial.println("  Marker Power: " + exterior->markers->power.readStatus());
+  //Serial.println("  Strobe Power: " + exterior->strobes->power.readStatus());
 }
 
+/*
 SIGNAL(TIMER0_COMPA_vect)
 {
   unsigned long now = millis();
 
-  exteriorMarkers.Signal(now);
-  exteriorStrobes.Signal(now);
-  //engineThrustInner.Signal(now);
-  //engineThrustOuter.Signal(now);
+  //exterior.markers.Signal(now);
+  //exterior.strobes.Signal(now);
+  //engine.thrustInner.Signal(now);
+  //engine.thrustLower.Signal(now);
   
   digitalWrite(latchPin, 0);
 
@@ -87,30 +103,33 @@ SIGNAL(TIMER0_COMPA_vect)
 
   digitalWrite(latchPin, 1);
 }
+*/
 
 void loop() {
-  //Serial.println(shiftExterior, BIN);
-
   
-  
-  delay(20);
-  
-  /*
   // single click
   // double click
   // long click
-  engineButtonState = digitalRead(engineButtonPin);
-
-  if (engineButtonState) {
-    if (!engineButtonPress) {
-      engineButtonPress = 1;
+  
+  btnEngineFirstState = digitalRead(btnEngineFirstPin);
+  if (btnEngineFirstState) {
+    if (!btnEngineFirstPress) {
+      btnEngineFirstPress = 1;
       //enginePower.cycleEngines();
     }
-    
   } else {
-    engineButtonPress = 0;
+    btnEngineFirstPress = 0;
+  }
+
+  btnExteriorFirstState = digitalRead(btnExteriorFirstPin);
+  if (btnExteriorFirstState) {
+    if (!btnExteriorFirstPress) {
+      btnExteriorFirstPress = 1;
+      //exterior.power.toggle();
+    }
+  } else {
+    btnExteriorFirstPress = 0;
   }
 
   delay(1);
-  */
 }
