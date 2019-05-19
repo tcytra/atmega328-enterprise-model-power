@@ -7,17 +7,40 @@
 */
 class ExteriorPower
 {
-  byte shift = 0B00000000;
+  byte  shift = 0B00000000;
   
   public:
   
   Flasher *markers;
   Flasher *strobes;
-  Power power;
+  LED     *flood1;
+  LED     *flood2;
+  LED     *flood3;
+  LED     *flood4;
+  Power    power;
   
   ExteriorPower(int markerPin, int strobePin)
   {
-    markers = new Flasher(shift, markerPin, 1000, 1000);
-    strobes = new Flasher(shift, strobePin, 64, 1200);
+    markers = new Flasher(markerPin, 1000, 1000);
+    strobes = new Flasher(strobePin, 64, 1200);
+    flood1  = new LED(3);
+    flood2  = new LED(4);
+    flood3  = new LED(5);
+    flood4  = new LED(6);
+  }
+
+  byte shiftRead()
+  {
+    return shift;
+  }
+  
+  void signal(unsigned long now)
+  {
+    markers->signal(shift, now);
+    strobes->signal(shift, now);
+    flood1->signal(shift);
+    flood2->signal(shift);
+    flood3->signal(shift);
+    flood4->signal(shift);
   }
 };

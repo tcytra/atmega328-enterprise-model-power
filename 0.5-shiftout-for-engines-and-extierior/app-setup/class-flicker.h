@@ -7,43 +7,38 @@
 */
 class Flicker
 {
-  int pin;
-  int wait;
-  int level;
-  int power;
-  int state;
+  int   wait;
+  int   level;
   unsigned long then;
   
   public:
+  int   pin;
+  int   state;
+  Power power;
   
-  Flicker(int _pin, int _shift = 0)
+  Flicker(int _pin, int _wait = 100)
   {
-    pin   = _shift ? pin2Bit(_pin) : _pin;
-    wait  = 100;
+    pin   = pin2Bit(_pin);
+    wait  = _wait;
     then  = 0;
-    power = 0;
     state = 0;
-    
-    pinMode(pin, OUTPUT);
   }
   
-  void Power(int set = -1)
+  void signal(byte &shift, unsigned long now)
   {
-    power = ((set > -1) ? set : ((power > 0) ? 0 : 1));
-  }
-  
-  void Signal(unsigned long now)
-  {
-    if (power) {
+    if (power.available) {
       if (now -then >= wait) {
         then = now;
         state = random(120) +135;
-        analogWrite(pin, state);
+        //analogWrite(pin, state);
       }
     } else
     if (state) {
       state = 0;
-      analogWrite(pin, state);
+      then  = 0;
+      //analogWrite(pin, state);
     }
+
+    bitWrite(shift, pin, state);
   }
 };

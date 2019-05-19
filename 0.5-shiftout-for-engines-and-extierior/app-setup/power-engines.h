@@ -7,6 +7,8 @@
 */
 class EnginePower
 {
+  byte shift = 0B00000000;
+  
   int dishPinRed;
   int dishPinGreen;
   int dishPinBlue;
@@ -24,7 +26,7 @@ class EnginePower
 
   int powerLevel(byte target, byte level = 0)
   {
-    //return level ? round( target *(level /100) ) : (target ? target : 0);
+    return level ? round( target *(level /100) ) : (target ? target : 0);
   }
 
   public:
@@ -48,6 +50,13 @@ class EnginePower
     //engineThrustOuter.Power(0);
     */
   }
+
+
+  byte shiftRead()
+  {
+    return shift;
+  }
+  
 
   void disengageEngines()
   {

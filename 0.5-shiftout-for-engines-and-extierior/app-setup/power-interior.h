@@ -11,8 +11,9 @@ class InteriorPower
   byte  shiftrows   = 0B00000000;
   
   public:
+  
   Power power;
   
-  //InteriorPower(){}
+  InteriorPower(){}
   
 };

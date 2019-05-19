@@ -1,2 +1,2 @@
-# Enterprise Refit 1/350 Lighting
+# Enterprise Refit 1/350 Lighting System
 

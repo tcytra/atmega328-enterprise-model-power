@@ -8,11 +8,9 @@
 class Power
 {
   public:
-  Power()
-  {  }
-  
   int available = 0;
-  int outlevel  = 0;
+  
+  Power(){}
   
   void down()
   { available = 0; }
@@ -22,9 +20,6 @@ class Power
   
   void up()
   { available = 1; }
-
-  void signal()
-  {  }
 
   String readStatus()
   {
