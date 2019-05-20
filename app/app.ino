@@ -1,20 +1,21 @@
 /**
-  Enterprise Power
-  Application Setup
-
+  Enterprise Power Systems
+  Application
+  
   @author   Todd Cytra <tcytra@gmail.com>
-  @version  0.1 app-setup 2019-05-17
+  @version  0.6 app.ino 2019-05-17
 */
 
 //  include the libraries
 #include <TimerOne.h>
 
 //  include the local classes
-#include "app-utility.h"    //  utilities used by the classes
-#include "class-power.h"    //  Power is a dependancy object
-#include "class-button.h"   //  Button is a dependancy object
+#include "app-utility.h"
+#include "class-power.h"
+#include "class-button.h"
 #include "class-flasher.h"
 #include "class-flicker.h"
+#include "class-system.h"
 
 class LED
 {
@@ -42,53 +43,53 @@ class LED
 };
 
 //  include the power systems
-#include "power-engines.h"
-#include "power-exterior.h"
+#include "system-engines.h"
+#include "system-exterior.h"
 
-EnginePower   *engine;
-ExteriorPower *exterior;
+EngineSystem    *engine;
+ExteriorSystem  *exterior;
 
 //  ------------------------------------------------------------
 
 //  engine pins
-int   dishPins[3]   = {9, 10, 11};
-int   thrustPins[3] = {3, 5, 6};
+byte  dishPins[3]   = {9, 10, 11};
+byte  thrustPins[3] = {3, 5, 6};
 
 //  engine buttons
-int   btnEngineFirstPin   = 2;
+byte  btnEngineFirstPin   = 2;
 byte  btnEngineFirstState = 0;
 byte  btnEngineFirstPress = 0;
 
-int   btnEngineFinalPin   = 4;
+byte  btnEngineFinalPin   = 4;
 byte  btnEngineFinalState = 0;
 byte  btnEngineFinalPress = 0;
 
-int   btnExteriorFirstPin   = 7;
+byte  btnExteriorFirstPin   = 7;
 byte  btnExteriorFirstState = 0;
 byte  btnExteriorFirstPress = 0;
 
-int   btnExteriorFinalPin   = 8;
+byte  btnExteriorFinalPin   = 8;
 byte  btnExteriorFinalState = 0;
 byte  btnExteriorFinalPress = 0;
 
 //  exterior pins
-int   markerPin   = 1;
-int   strobePin   = 2;
+byte  markerPin   = 1;
+byte  strobePin   = 2;
 
 //  ------------------------------------------------------------
 
 //  declare the shiftout pins
-int   latchPin          = 10; // ST_CP
-int   clockPin          = 13; // SH_CP
-int   dataPin           = 11; // DS
+byte  latchPin          = 10; // ST_CP
+byte  clockPin          = 13; // SH_CP
+byte  dataPin           = 11; // DS
 
 unsigned long appStarted;
 
 void setup() {
   Serial.begin(9600);
 
-  engine    = new EnginePower(dishPins, thrustPins);    // init with Config object?
-  exterior  = new ExteriorPower(markerPin, strobePin);  // "
+  engine    = new EngineSystem(dishPins, thrustPins);    // init with Config object?
+  exterior  = new ExteriorSystem(markerPin, strobePin);  // "
   exterior->addButtons(btnEngineFirstPin, btnEngineFinalPin);
   
   //  connect the shiftout pins

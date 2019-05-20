@@ -1,37 +1,37 @@
 /**
-  Class EnginePower
+  Class EngineSystem
   Manage the power to the various engine systems
 
   @author   Todd Cytra <tcytra@gmail.com>
-  @version  0.5 power-engines.h 2019-05-17
+  @version  0.6 system-engines.h 2019-05-17
 */
-class EnginePower
+class EngineSystem: public System
 {
-  byte shift = 0B00000000;
+  byte  shift = 0B00000000;
   
-  int dishPinRed;
-  int dishPinGreen;
-  int dishPinBlue;
-  int thrustPinInner;
-  int thrustPinLower;
-  int thrustPinUpper;
+  byte  dishPinRed;
+  byte  dishPinGreen;
+  byte  dishPinBlue;
+  byte  thrustPinInner;
+  byte  thrustPinLower;
+  byte  thrustPinUpper;
 
-  char allowCycleBack = 0;
-  char allowThrustOff = 0;
+  char  allowCycleBack = 0;
+  char  allowThrustOff = 0;
   
-  byte engineState    = 0;
-  byte engineLevel[3] = {0, 0, 0};
-  byte rgbImpulse[3]  = {255, 127, 0};
-  byte rgbWarp[3]     = {0, 0, 255};
+  byte  engineState    = 0;
+  byte  engineLevel[3] = {0, 0, 0};
+  byte  rgbImpulse[3]  = {255, 127, 0};
+  byte  rgbWarp[3]     = {0, 0, 255};
 
-  int powerLevel(byte target, byte level = 0)
+  byte powerLevel(byte target, byte level = 0)
   {
     return level ? round( target *(level /100) ) : (target ? target : 0);
   }
 
   public:
   Power power;
-  EnginePower(int dishPins[3], int thrustPins[3])
+  EngineSystem(byte dishPins[3], byte thrustPins[3])
   {
     dishPinRed    = dishPins[0];
     dishPinGreen  = dishPins[1];
@@ -69,20 +69,20 @@ class EnginePower
     engineState = 0;
   }
 
-  void impulsePower(int level)
+  void impulsePower(byte level)
   {
     analogWrite(dishPinRed,     powerLevel(rgbImpulse[0], level));
     analogWrite(dishPinGreen,   powerLevel(rgbImpulse[1], level));
     analogWrite(dishPinBlue,    powerLevel(rgbImpulse[2], level));
   }
 
-  void thrusterPower(int level)
+  void thrusterPower(byte level)
   {
     //engineThrustInner.Power(level ? 1 : 0);
     //engineThrustOuter.Power(level ? 1 : 0);
   }
   
-  void warpPower(int level)
+  void warpPower(byte level)
   {
     analogWrite(dishPinRed,   powerLevel(rgbWarp[0], level));
     analogWrite(dishPinGreen, powerLevel(rgbWarp[1], level));

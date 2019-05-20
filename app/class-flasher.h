@@ -3,7 +3,8 @@
   Manage a flashing light effect
   
   @author   Todd Cytra <tcytra@gmail.com>
-  @version  0.5 class-flasher.h 2019-05-17
+  @version  0.6 class-flasher.h 2019-05-17
+  @todo     This needs to be implemented as a trait (of LED?)
 */
 class Flasher
 {

@@ -1,5 +1,5 @@
 
-int pin2Bit(int pin)
+byte pin2Bit(byte pin)
 {
   return (7 - pin);
 };
@@ -10,11 +10,11 @@ class Shift
   
   public:
 
-  void read(int _pin)
+  void read(byte _pin)
   {
     bitRead(value, _pin);
   }
-  void write(int _pin, int _state)
+  void write(byte _pin, byte _state)
   {
     bitWrite(value, _pin, _state);
   }

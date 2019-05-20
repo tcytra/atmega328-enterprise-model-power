@@ -3,12 +3,12 @@
   Instantiate within an object to provide power management within that object
 
   @author   Todd Cytra <tcytra@gmail.com>
-  @version  0.5 class-power.h 2019-05-18
+  @version  0.6 class-power.h 2019-05-18
 */
 class Power
 {
   public:
-  int available = 0;
+  byte  available = 0;
   
   Power(){}
   

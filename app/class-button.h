@@ -3,16 +3,17 @@
   Manage a circuit button
   
   @author   Todd Cytra <tcytra@gmail.com>
-  @version  0.5 class-button.h 2019-05-19
+  @version  0.6 class-button.h 2019-05-20
 */
 class Button
 {
-  int   pin;
-  
+  byte  pin;
+  byte  click;
+  byte  state;
   unsigned long stamp;
   
   public:
-  Button(int _pin){
+  Button(byte _pin){
     pin   = _pin;
   }
 };
