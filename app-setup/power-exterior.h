@@ -10,7 +10,9 @@ class ExteriorPower
   byte  shift = 0B00000000;
   
   public:
-  
+
+  Button  *button1;
+  Button  *button2;
   Flasher *markers;
   Flasher *strobes;
   LED     *flood1;
@@ -27,6 +29,11 @@ class ExteriorPower
     flood2  = new LED(4);
     flood3  = new LED(5);
     flood4  = new LED(6);
+  }
+  void addButtons(int primary = 0, int secondary = 0)
+  {
+    button1 = new Button(primary);
+    button2 = new Button(secondary);
   }
 
   byte shiftRead()

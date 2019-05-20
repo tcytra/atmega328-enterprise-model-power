@@ -9,6 +9,8 @@ class Button
 {
   int   pin;
   
+  unsigned long stamp;
+  
   public:
   Button(int _pin){
     pin   = _pin;

@@ -89,7 +89,8 @@ void setup() {
 
   engine    = new EnginePower(dishPins, thrustPins);    // init with Config object?
   exterior  = new ExteriorPower(markerPin, strobePin);  // "
-
+  exterior->addButtons(btnEngineFirstPin, btnEngineFinalPin);
+  
   //  connect the shiftout pins
   pinMode(latchPin, OUTPUT);
   pinMode(clockPin, OUTPUT);
@@ -130,7 +131,7 @@ SIGNAL(TIMER0_COMPA_vect)
 void loop() {
 
   unsigned long ms = millis();
-
+  
   if (ms - appStarted > 30000) {
     if (ms % 1000 == 0) {
       if (exterior->flood4->power.available) {
@@ -161,7 +162,7 @@ void loop() {
         exterior->power.down();
         Serial.println("Exterior Power: " + exterior->power.readStatus());
 
-        appStarted = millis() - 60000;
+        appStarted = millis();
       }
     }
   } else
