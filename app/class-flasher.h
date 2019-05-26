@@ -8,52 +8,38 @@
 */
 class Flasher
 {
-  int   on;
-  int   off;
+  unsigned int  delayOn;
+  unsigned int  delayOff;
   unsigned long then;
 
   public:
-  int   pin;
-  int   state;
+  
+  byte  pin;
   Power power;
   
-  Flasher(int _pin, long _on, long _off)
+  Flasher(int _pin, int _on, int _off)
   {
-    pin   = pin2Bit(_pin);
-    on    = _on;
-    off   = _off;
-    then  = 0;
-    state = 0;
+    pin = _pin;
+    delayOn   = _on;
+    delayOff  = _off;
   }
-  
-  void signal(byte &shift, unsigned long now)
+
+  void timer(unsigned long now)
   {
-    if (power.available) {
-      if ((state == 1) && (now -then >= on)) {
-        state = 0;
+    if (power.active) {
+      if ((power.state) && (now -then >= delayOn)) {
+        power.state = 0;
         then  = now;
       } else
-      if ((state == 0) && (now -then >= off)) {
-        state = 1;
+      if ((power.state == 0) && (now -then >= delayOff)) {
+        power.state = ConstantPower;
         then  = now;
       }
-    } else
-    if (state == 1) {
-      state = 0;
+    } else if (power.state) {
+      power.state = 0;
       then  = 0;
     }
 
-    bitWrite(shift, pin, state);
+    ShiftPWM.SetOne(pin, power.state);
   }
-  
-  /*void Write(unsigned long _now, int _state)
-  {
-    //if(_state){ Serial.println("Marker On"); }else{ Serial.println("Marker Off"); }
-    
-    then  = _now;
-    state = _state;
-    bitWrite(shift, pin, state);
-
-    //Serial.println(shift, BIN);
-  }*/
 };

@@ -9,37 +9,37 @@
 class Flicker
 {
   int   wait;
-  int   level;
+  int   maximum;
+  int   minimum;
+  
   unsigned long then;
   
   public:
+  
   int   pin;
-  int   state;
   Power power;
   
-  Flicker(int _pin, int _wait = 100)
+  Flicker(int _pin, int _wait = 100, byte _min = 0, byte _max = 255)
   {
-    pin   = pin2Bit(_pin);
+    pin   = _pin;
     wait  = _wait;
     then  = 0;
-    state = 0;
+    maximum = _max;
+    minimum = _min;
   }
-  
-  void signal(byte &shift, unsigned long now)
+
+  void timer(unsigned long now)
   {
-    if (power.available) {
+    if (power.active) {
       if (now -then >= wait) {
         then = now;
-        state = random(120) +135;
-        //analogWrite(pin, state);
+        power.state = random(maximum - minimum) +minimum;
+        ShiftPWM.SetOne(pin, power.state);
       }
-    } else
-    if (state) {
-      state = 0;
+    } else {
+      power.state = 0;
       then  = 0;
-      //analogWrite(pin, state);
+      ShiftPWM.SetOne(pin, power.state);
     }
-
-    bitWrite(shift, pin, state);
   }
 };

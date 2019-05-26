@@ -8,23 +8,31 @@
 class Power
 {
   public:
-  byte  available = 0;
+  byte  action; // -1 = power down, 0 = steady, 1 = power up
+  byte  active; //  1 = on, 0 = off
+  bool  invert; //  true (state 255 is off), false
+  byte  steady; //  0-255 = normal operational level
+  byte  state;  //  0-255 = current power state
   
-  Power(){}
-  
-  void down()
-  { available = 0; }
-  
-  void toggle()
-  { available = available ? 0 : 1; }
-  
-  void up()
-  { available = 1; }
-
-  String readStatus()
+  Power()
   {
-    String powerStatus = (available ? "Up" : "Down");
-
-    return powerStatus;
+    action  = 0;
+    active  = 0;
+    invert  = false;
+    state   = 0;
+    steady  = ConstantPower;
+  }
+  
+  void off()
+  {
+    action  = 0;
+    active  = 0;
+    state   = invert ? 255 : 0;
+  }
+  void on()
+  {
+    action  = 0;
+    active  = 1;
+    state   = invert ? 255 -steady : steady;
   }
 };

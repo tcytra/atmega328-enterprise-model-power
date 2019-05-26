@@ -7,73 +7,135 @@
 */
 class EngineSystem: public System
 {
-  byte  shift = 0B00000000;
+  byte  state    = 0;
   
-  byte  dishPinRed;
-  byte  dishPinGreen;
-  byte  dishPinBlue;
-  byte  thrustPinInner;
-  byte  thrustPinLower;
-  byte  thrustPinUpper;
-
-  char  allowCycleBack = 0;
-  char  allowThrustOff = 0;
+  //char  allowCycleBack = 1;//!implemented
+  char  allowThrustOff = 1;
   
-  byte  engineState    = 0;
-  byte  engineLevel[3] = {0, 0, 0};
-  byte  rgbImpulse[3]  = {255, 127, 0};
-  byte  rgbWarp[3]     = {0, 0, 255};
-
-  byte powerLevel(byte target, byte level = 0)
-  {
-    return level ? round( target *(level /100) ) : (target ? target : 0);
-  }
-
   public:
+  
+  Flicker *thrust0;
+  Flicker *thrust1;
+  Flicker *thrust2;
+  LED *dishRed;
+  LED *dishGreen;
+  LED *dishBlue;
+  LED *impulse;
+  LED *nacelle;
   Power power;
-  EngineSystem(byte dishPins[3], byte thrustPins[3])
+  
+  EngineSystem(byte dishPins[3], byte thrustPins[3], byte impulsePin, byte nacellePin)
   {
-    dishPinRed    = dishPins[0];
-    dishPinGreen  = dishPins[1];
-    dishPinBlue   = dishPins[2];
-
-    /*
-    //pinMode(dishPinRed,   OUTPUT);
-    //pinMode(dishPinGreen, OUTPUT);
-    //pinMode(dishPinBlue,  OUTPUT);
-
-    //analogWrite(dishPinRed,   0);
-    //analogWrite(dishPinGreen, 0);
-    //analogWrite(dishPinBlue,  0);
-
-    //engineThrustInner.Power(0);
-    //engineThrustOuter.Power(0);
-    */
+    impulse   = new LED(impulsePin, NominalPower);
+    nacelle   = new LED(nacellePin, NominalPower);
+    
+    dishRed   = new LED(dishPins[0], NominalPower);
+    dishBlue  = new LED(dishPins[1], NominalPower);
+    dishGreen = new LED(dishPins[2], round(NominalPower / 2));
+    
+    thrust0   = new Flicker(thrustPins[0], 80, NominalPower -48, NominalPower);
+    thrust1   = new Flicker(thrustPins[1], 80, ConstantPower -48, ConstantPower);
+    thrust2   = new Flicker(thrustPins[2], 80, NominalPower -48, NominalPower);
   }
 
-
-  byte shiftRead()
+  void signal(unsigned long now)
   {
-    return shift;
+    dishRed->timer(now);
+    dishGreen->timer(now);
+    dishBlue->timer(now);
+    thrust0->timer(now);
+    thrust1->timer(now);
+    thrust2->timer(now);
+    impulse->timer(now);
+    nacelle->timer(now);
   }
   
+  void cycle()
+  {
+    byte impulseActive    = bitRead(state, 1);
+    byte thrustersActive  = bitRead(state, 0);
+    byte warpActive       = bitRead(state, 2);
+
+    switch (state) {
+      case 1: state = allowThrustOff ? 3 : 3; break;
+      case 2: state = allowThrustOff ? 5 : 0; break;
+      case 3: state = allowThrustOff ? 2 : 5; break;
+      case 4: state = 0; break;
+      case 5: state = allowThrustOff ? 4 : 0; break;
+      case 6: state = 0; break;
+      case 0: state = 1; break;
+    }
+
+    if (!state) {
+      disengageEngines();
+      
+    } else {
+      //  manage thruster power
+      if (bitRead(state, 0) == 1) {
+        if (thrustersActive != 1) {
+          Serial.println("Request: Engage Thrusters");
+          //thrusterPower();
+          thrust0->power.on();
+          thrust1->power.on();
+          thrust2->power.on();
+          
+        }
+      } else {
+        if (thrustersActive == 1) {
+          Serial.println("Request: Disengage Thrusters");
+          //thrusterPower(0);
+          thrust0->power.off();
+          thrust1->power.off();
+          thrust2->power.off();
+        }
+      }
+      
+      //  apply impulse power
+      if (bitRead(state, 1) == 1) {
+        if (impulseActive != 1) {
+          Serial.println("Request: Engage Impulse Engines");
+          impulse->power.on();
+          dishRed->power.on();
+          dishGreen->power.on();
+          dishBlue->power.off();
+          nacelle->power.off();
+        }
+      }
+      
+      //  apply warp power
+      if (bitRead(state, 2) == 1) {
+        if (warpActive != 1) {
+          Serial.println("Request: Engage Warp Engines");
+          impulse->power.off();
+          dishRed->power.off();
+          dishGreen->power.off();
+          dishBlue->power.on();
+          nacelle->power.on();
+        }
+      }
+    }
+  }
 
   void disengageEngines()
   {
     Serial.println("Engine Status: All Engines Disengaged");
-    analogWrite(dishPinRed,     powerLevel(0));
-    analogWrite(dishPinGreen,   powerLevel(0));
-    analogWrite(dishPinBlue,    powerLevel(0));
-    //engineThrustInner.Power(0);
-    //engineThrustOuter.Power(0);
-    engineState = 0;
+    
+    dishRed->power.off();
+    dishGreen->power.off();
+    dishBlue->power.off();
+    thrust0->power.off();
+    thrust1->power.off();
+    thrust2->power.off();
+    nacelle->power.off();
+    
+    state = 0;
   }
 
   void impulsePower(byte level)
   {
-    analogWrite(dishPinRed,     powerLevel(rgbImpulse[0], level));
-    analogWrite(dishPinGreen,   powerLevel(rgbImpulse[1], level));
-    analogWrite(dishPinBlue,    powerLevel(rgbImpulse[2], level));
+    //analogWrite(dishPinRed,     powerLevel(rgbImpulse[0], level));
+    //analogWrite(dishPinGreen,   powerLevel(rgbImpulse[1], level));
+    //analogWrite(dishPinBlue,    powerLevel(rgbImpulse[2], level));
   }
 
   void thrusterPower(byte level)
@@ -84,59 +146,8 @@ class EngineSystem: public System
   
   void warpPower(byte level)
   {
-    analogWrite(dishPinRed,   powerLevel(rgbWarp[0], level));
-    analogWrite(dishPinGreen, powerLevel(rgbWarp[1], level));
-    analogWrite(dishPinBlue,  powerLevel(rgbWarp[2], level));
-  }
-
-  void cycleEngines()
-  {
-    byte impulseActive    = bitRead(engineState, 1);
-    byte thrustersActive  = bitRead(engineState, 0);
-    byte warpActive       = bitRead(engineState, 2);
-
-    switch (engineState) {
-      case 1: engineState = allowThrustOff ? 3 : 3; break;
-      case 2: engineState = allowThrustOff ? 5 : 0; break;
-      case 3: engineState = allowThrustOff ? 2 : 5; break;
-      case 4: engineState = 0; break;
-      case 5: engineState = allowThrustOff ? 4 : 0; break;
-      case 6: engineState = 0; break;
-      case 0: engineState = 1; break;
-    }
-
-    if (!engineState) {
-      disengageEngines();
-      
-    } else {
-      //  manage thruster power
-      if (bitRead(engineState,0) == 1) {
-        if (thrustersActive != 1) {
-          Serial.println("Request: Engage Thrusters");
-          thrusterPower(100);
-        }
-      } else {
-        if (thrustersActive == 1) {
-          Serial.println("Request: Disengage Thrusters");
-          thrusterPower(0);
-        }
-      }
-      
-      //  apply impulse power
-      if (bitRead(engineState,1) == 1) {
-        if (impulseActive != 1) {
-          Serial.println("Request: Engage Impulse Engines");
-          impulsePower(100);
-        }
-      }
-      
-      //  apply warp power
-      if (bitRead(engineState,2) == 1) {
-        if (warpActive != 1) {
-          Serial.println("Request: Engage Warp Engines");
-          warpPower(100);
-        }
-      }
-    }
+    //analogWrite(dishPinRed,   powerLevel(rgbWarp[0], level));
+    //analogWrite(dishPinGreen, powerLevel(rgbWarp[1], level));
+    //analogWrite(dishPinBlue,  powerLevel(rgbWarp[2], level));
   }
 };

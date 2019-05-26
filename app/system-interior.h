@@ -7,12 +7,12 @@
 */
 class InteriorSystem: public System
 {
-  byte  shift[2]    = {0B00000000, B00000000};
-  
   public:
   
   Power power;
   
   InteriorSystem(){}
-  
+
+  void signal(unsigned long now)
+  {  }
 };
